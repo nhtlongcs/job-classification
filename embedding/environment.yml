@@ -33,6 +33,11 @@ dependencies:
     # --- nlp ---
     - tokenizers
     - sentencepiece
+    - sentence-transformers
+    # haystack
+    - haystack-ai
+    - chroma-haystack
     # --- utils ---
     - pandas
     - numpy
+    - tqdm

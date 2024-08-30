@@ -1,0 +1,23 @@
+import pandas as pd
+import string
+from IPython.utils import io
+
+def preprocess_data(file_path):
+    df = pd.read_csv(file_path)
+    columns = ["id", "title", "description"]
+    df_subset = df[columns]
+    df_subset.drop_duplicates(subset="description", inplace=True)
+    df_subset.dropna(inplace=True)
+    df_subset["description"] = df_subset["description"].str.lower()
+    df_subset["description"] = df_subset["description"].str.replace(f'[{string.punctuation}]', '', regex=True)
+    return df_subset
+
+def get_query_results(pipeline, query: str, top_k: int = 5):
+    with io.capture_output() as captured:
+        prediction = pipeline.run_query(query, top_k)
+    codes = [str(doc.meta['code']) for doc in prediction['retriever']['documents']]
+    labels = [str(doc.meta['label']) for doc in prediction['retriever']['documents']]
+    return ', '.join(codes), ', '.join(labels)
+
+def save_results(df, output_path):
+    df.to_csv(output_path, index=False)
