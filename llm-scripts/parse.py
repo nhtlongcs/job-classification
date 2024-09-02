@@ -2,7 +2,9 @@ import re
 import json
 
 def parse_final_prediction(response):
-    pattern = r'\*\*ISCO Code:\*\*\s*(.*)\n\*\*ISCO Title:\*\*\s*(.*)\n\*\*Confidence:\*\*\s*([\d.]+)'
+    job_id_pattern = r"Job Ad ID:\s*(\d+)"
+    prediction_pattern = r'\*\*ISCO Code:\*\*\s*(.*)'
+    # prediction_pattern = r'\*\*ISCO Code:\*\*\s*(.*)\n\*\*ISCO Title:\*\*\s*(.*)\n\*\*Confidence:\*\*\s*([\d.]+)'
 
     # Split the response by the delimiter "-----------------------------------"
     parts = response.split('-----------------------------------')
@@ -12,17 +14,21 @@ def parse_final_prediction(response):
 
     for part in parts:
         # Find all matches in each split part
-        matches = re.findall(pattern, part)
-
-        for match in matches:
-            # Create a dictionary with the extracted information
-            result = {
-                "ISCO Code": match[0].strip(),
-                "ISCO Title": match[1].strip(),
-                "Confidence": float(match[2])
-            }
-            # Append to the results list
-            results.append(result)
+        matches_job_id = re.findall(job_id_pattern, part)
+        matches_prediction = re.findall(prediction_pattern, part)
+        if matches_job_id and matches_prediction:
+            # Use the first matched Job ID
+            job_id = matches_job_id[0]
+            for match in matches_prediction:
+                # Create a dictionary with the extracted information
+                result = {
+                    "Job Ad ID": job_id,
+                    "ISCO Code": match.strip(),
+                    # "ISCO Title": match[1].strip(),
+                    # "Confidence": float(match[2])
+                }
+                # Append to the results list
+                results.append(result)
 
     # Return the results in JSON format
     return json.dumps(results, indent=4)
