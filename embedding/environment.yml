@@ -34,6 +34,7 @@ dependencies:
     - tokenizers
     - sentencepiece
     - sentence-transformers
+    - langdetect
     # haystack
     - haystack-ai
     - chroma-haystack
