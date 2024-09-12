@@ -37,8 +37,10 @@ dependencies:
     - langdetect
     # haystack
     - haystack-ai
-    - chroma-haystack
     # --- utils ---
     - pandas
     - numpy
     - tqdm
+    - pip: 
+        - chroma-haystack
+
