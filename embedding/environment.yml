@@ -38,6 +38,7 @@ dependencies:
     # haystack
     - haystack-ai
     # --- utils ---
+    - notebook
     - pandas
     - numpy
     - tqdm
