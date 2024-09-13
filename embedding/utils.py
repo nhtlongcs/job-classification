@@ -5,13 +5,13 @@ from langdetect import detect
 
 def preprocess_data(file_path):
     df = pd.read_csv(file_path)
-    columns = ["id", "title", "description"]
-    df_subset = df[columns]
+    # columns = ["id", "title", "final_description"]
+    # df_subset = df[columns]
     # df_subset.drop_duplicates(subset="description", inplace=True)
     # df_subset.dropna(inplace=True)
-    df_subset["description"] = df_subset["description"].str.lower()
-    df_subset["description"] = df_subset["description"].str.replace(f'[{string.punctuation}]', '', regex=True)
-    return df_subset
+    # df_subset["description"] = df_subset["description"].str.lower()
+    # df_subset["description"] = df_subset["description"].str.replace(f'[{string.punctuation}]', '', regex=True)
+    return df
 
 def is_english(text):
     try:
