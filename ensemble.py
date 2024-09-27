@@ -50,10 +50,11 @@ def test():
 
 ensemble_files = [
     "top_k_prediction/merged_predictions_latest.csv",
-    "top_k_prediction/merged_predictions_2024-09-26.csv",
-    "top_k_prediction/merged_predictions_2024-09-22.csv",
+    # "top_k_prediction/merged_predictions_2024-09-26.csv",
+    # "top_k_prediction/merged_predictions_2024-09-22.csv",
+    "top_k_prediction/fuzzy_match_merged_predictions_2024-09-23.csv",
 ]
-
+factors = [1, 1]
     
 compare_file = "top_k_prediction/merged_predictions_latest.csv"
 
@@ -64,16 +65,17 @@ def main():
     for file in ensemble_files:
         df = pd.read_csv(file)
         dfs.append(df)
-
-    final_df = {"id": [], "ISCO Code": []}
+    prediction_col = "ISCO Code"
+    prediction_col = "Final Prediction"
+    final_df = {"id": [], prediction_col: []}
 
     for filename in ensemble_files:
         final_df[Path(filename).stem] = []
     uids = set(dfs[0]["id"].unique())
     for i, df in enumerate(dfs):
         dfs[i] = dfs[i].set_index("id")
-        dfs[i]["ISCO Code"] = dfs[i]["ISCO Code"].fillna(0)
-        dfs[i]['ISCO Code'] = dfs[i]['ISCO Code'].astype(int).astype(str).apply(lambda x: x.zfill(4))
+        dfs[i][prediction_col] = dfs[i][prediction_col].fillna(0)
+        dfs[i][prediction_col] = dfs[i][prediction_col].astype(int).astype(str).apply(lambda x: x.zfill(4))
         assert len(uids.intersection(set(df["id"].unique()))) == len(uids), f"Dataframe {i} should have the same ids as the first dataframe"
 
     for uid in tqdm(uids):
@@ -82,31 +84,32 @@ def main():
         for i, df in enumerate(dfs):
             if "Confidence" not in df.columns:
                 df["Confidence"] = 0.7
-            code = df.loc[uid]["ISCO Code"]
+            code = df.loc[uid][prediction_col]
             if code == "0000":
                 score = 0
             else:
                 score = df.loc[uid]["Confidence"] if df.loc[uid]["Confidence"] else 0.7
+            score = score * factors[i]
             codes.append((code, score))
-            final_df[Path(ensemble_files[i]).stem].append(df.loc[uid]["ISCO Code"])
+            final_df[Path(ensemble_files[i]).stem].append(df.loc[uid][prediction_col])
         
         final_code = merge_predictions(codes)
-        final_df["ISCO Code"].append(final_code)
+        final_df[prediction_col].append(final_code)
 
     final_df = pd.DataFrame(final_df)
     final_df.to_csv("ensemble_predictions.csv", index=False)
-    error_codes = len(final_df[final_df["ISCO Code"] == "0000"])
+    error_codes = len(final_df[final_df[prediction_col] == "0000"])
     print(f"There are {error_codes} errors in the final predictions")
 
     # Compare with the latest predictions
     compare_df = pd.read_csv(compare_file)
     compare_df = compare_df.set_index("id")
-    compare_df["ISCO Code"] = compare_df["ISCO Code"].fillna(0).astype(int).astype(str).apply(lambda x: x.zfill(4))
+    compare_df[prediction_col] = compare_df[prediction_col].fillna(0).astype(int).astype(str).apply(lambda x: x.zfill(4))
     final_df = final_df.set_index("id")
     count = 0 
     for uid in uids:
-        if final_df.loc[uid]["ISCO Code"] != compare_df.loc[uid]["ISCO Code"]:
-            print(f"{uid}: {compare_df.loc[uid]['ISCO Code']} -> {final_df.loc[uid]['ISCO Code']}")
+        if final_df.loc[uid][prediction_col] != compare_df.loc[uid][prediction_col]:
+            print(f"{uid}: {compare_df.loc[uid][prediction_col]} -> {final_df.loc[uid][prediction_col]}")
             count += 1
     print(f"Total {count} predictions are different")
 
