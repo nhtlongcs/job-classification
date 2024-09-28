@@ -49,13 +49,14 @@ def test():
 
 
 ensemble_files = [
+    "top_k_prediction/fuzzy_match_merged_predictions_latest.csv",
     "top_k_prediction/merged_predictions_latest.csv",
-    # "top_k_prediction/merged_predictions_2024-09-26.csv",
-    # "top_k_prediction/merged_predictions_2024-09-22.csv",
-    "top_k_prediction/fuzzy_match_merged_predictions_2024-09-23.csv",
+    "top_k_prediction/merged_predictions_top1_on_low_conf_samples.csv",
+    "top_k_prediction/merged_predictions_higher_levels.csv",
 ]
-factors = [1, 1]
-    
+factors = [1, 1, 1, 1]
+default_confidence = 1
+# compare_file = "top_k_prediction/fuzzy_match_merged_predictions_latest.csv"
 compare_file = "top_k_prediction/merged_predictions_latest.csv"
 
 def main():
@@ -83,7 +84,7 @@ def main():
         final_df["id"].append(uid)
         for i, df in enumerate(dfs):
             if "Confidence" not in df.columns:
-                df["Confidence"] = 0.7
+                df["Confidence"] = default_confidence
             code = df.loc[uid][prediction_col]
             if code == "0000":
                 score = 0
