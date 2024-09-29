@@ -2,18 +2,18 @@
 import pandas as pd
 from tqdm import tqdm
 from embedding.utils import preprocess_data, get_query_results, save_results, is_english
-from embedding.pipeline import RetrieverPipeline
+from embedding.pipeline import OpenAIRetrieverPipeline, RetrieverPipeline
 tqdm.pandas()
 
 # Preprocess data
-df_subset = preprocess_data("public_data/wi_dataset_processed_en.csv")
+df_subset = preprocess_data("public_data/wi_dataset_processed_multilingual.csv")
 # # Detect language
 # df_subset['is_en'] = df_subset.progress_apply(lambda row: is_english(row['description']), axis=1)
 
 # Initialize the query pipeline
-model = "sentence-transformers/all-MiniLM-L6-v2"
+model = "text-embedding-3-large"
 instruction= "Given a job advertisement, retrieve relevant job descriptions that matches the query."
-pipeline = RetrieverPipeline("public_data/wi_labels.csv", model=model, instruction=instruction)
+pipeline = OpenAIRetrieverPipeline("public_data/wi_labels_enriched_final.csv", model=model, instruction=instruction)
 
 # Apply the query results to the dataset
 top_k = 10
