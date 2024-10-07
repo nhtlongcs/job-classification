@@ -54,5 +54,4 @@ class GenerativeModelWrapper:
         #     max_tokens=8200,
         # )
         # response.choices[0].message.content
-        response.text = "## ISCO Unit Analysis for " + response.text
         return response
