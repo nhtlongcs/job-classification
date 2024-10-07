@@ -1,1 +1,0 @@
-python -c "import torch; print(f'TORCH_VERSION={torch.__version__}\nCUDA_AVAILABLE={torch.cuda.is_available()}\nTORCH_CUDA_ARCH_LIST={torch.cuda.get_device_capability()}')"

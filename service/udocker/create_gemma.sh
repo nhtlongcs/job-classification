@@ -7,4 +7,6 @@
 #run your job
 
 # REQUIRED
-udocker create --name=llm lmsysorg/sglang:latest
+
+udocker create --name=llm lmsysorg/sglang:v0.3.2-cu121
+udocker setup --nvidia llm
