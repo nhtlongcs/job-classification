@@ -40,9 +40,9 @@ class GenerativeModelWrapper:
         # Text completion
         response = self.model.completions.create(
             model="default",
-            prompt=prompt + " output: ",
+            prompt=prompt + " \\output: ## ISCO Unit Analysis for ",
             temperature=generation_config.get("temperature", 0),
-            max_tokens=8200,
+            max_tokens=16000,
         )
         response = response.choices[0]
         # response = self.model.chat.completions.create(
