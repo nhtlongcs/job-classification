@@ -45,16 +45,21 @@ def verify_config(cfg, args):
     Path(args.output).mkdir(exist_ok=True)
 
 
-args = parse_args()
-cfg = read_config(args.config)
-dataset_cfg = get_config_section(cfg, "dataset")
-verify_config(cfg, args)
-df_dataset = pd.read_csv(dataset_cfg["source"])
-df_dataset = translate_process_data(df_dataset)
+def main():
+    args = parse_args()
+    cfg = read_config(args.config)
+    dataset_cfg = get_config_section(cfg, "dataset")
+    verify_config(cfg, args)
+    df_dataset = pd.read_csv(dataset_cfg["source"])
+    df_dataset = translate_process_data(df_dataset)
 
-output_dir = Path(args.output)
-df_dataset.to_csv(output_dir / "wi_dataset_processed_en.csv", index=False)
-out_columns = ["id", "title", "lang", "description", "final_description"]
-df_dataset[out_columns].to_csv(
-    output_dir / "wi_dataset_processed_multilingual.csv", index=False
-)
+    output_dir = Path(args.output)
+    df_dataset.to_csv(output_dir / "wi_dataset_processed_en.csv", index=False)
+    out_columns = ["id", "title", "lang", "description", "final_description"]
+    df_dataset[out_columns].to_csv(
+        output_dir / "wi_dataset_processed_multilingual.csv", index=False
+    )
+
+
+if __name__ == "__main__":
+    main()
