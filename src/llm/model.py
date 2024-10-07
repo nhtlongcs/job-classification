@@ -29,6 +29,7 @@ class GenerativeModelWrapper:
 
     def generate_content(self, prompt, generation_config):
         if self.use_local:
+            # prompt = prompt + " \output:"
             return self._generate_content_local(prompt, generation_config)
         else:
             return self.model.generate_content(
@@ -39,9 +40,19 @@ class GenerativeModelWrapper:
         # Text completion
         response = self.model.completions.create(
             model="default",
-            prompt=prompt,
+            prompt=prompt + " output: ",
             temperature=generation_config.get("temperature", 0),
-            max_tokens=1024,
+            max_tokens=8200,
         )
         response = response.choices[0]
+        # response = self.model.chat.completions.create(
+        #     model="default",
+        #     messages=[
+        #         {"role": "user", "content": prompt},
+        #     ],
+        #     temperature=generation_config.get("temperature", 0),
+        #     max_tokens=8200,
+        # )
+        # response.choices[0].message.content
+        response.text = "## ISCO Unit Analysis for " + response.text
         return response
