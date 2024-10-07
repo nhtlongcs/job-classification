@@ -49,5 +49,6 @@ dependencies:
     - pytest
     - pip: 
         - polyfuzz  
+        - google-generativeai
         - chroma-haystack
 

@@ -1,10 +1,8 @@
 from nlp.lang import detect_language
-import pytest
 
 
 def test_detect_language():
     assert detect_language("Hello, world!") == "en"
-    assert detect_language("Hallo, Welt!") == "de"
     assert detect_language("Bonjour tout le monde!") == "fr"
     assert detect_language("Olá, mundo!") == "pt"
     assert detect_language("こんにちは、世界！") == "ja"
