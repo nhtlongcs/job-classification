@@ -98,39 +98,41 @@ def process_job_ads(
 
     write_mode = "a" if resume else "w"
 
-    with open(log_file_path, write_mode) as log_file:
-        pbar = tqdm.tqdm(total=len(queried_data) - last_processed_row)
-        for i in range(last_processed_row, len(queried_data)):
-            job_ad = queried_data.iloc[i]
-            retrieved_job_info_txt = get_retrieved_info(
-                job_ad, k=10, labels_df=labels, return_text=True
+    pbar = tqdm.tqdm(total=len(queried_data) - last_processed_row)
+    for i in range(last_processed_row, len(queried_data)):
+        job_ad = queried_data.iloc[i]
+        retrieved_job_info_txt = get_retrieved_info(
+            job_ad, k=10, labels_df=labels, return_text=True
+        )
+        try:
+            response = model.generate_content(
+                generate_prompt(job_ad, retrieved_job_info_txt),
+                generation_config={"temperature": 0},
             )
-            try:
-                response = model.generate_content(
-                    generate_prompt(job_ad, retrieved_job_info_txt),
-                    generation_config={"temperature": 0},
-                )
-                if os.getenv("GENAI_URL") == "localhost":
-                    pass  # No rate limit for localhost
-                else:
-                    time.sleep(rate_limit)  # To avoid hitting rate limits
+            if "localhost" in os.getenv("GENAI_URL") or "0.0.0.0" in os.getenv(
+                "GENAI_URL"
+            ):
+                pass  # No rate limit for localhost
+            else:
+                time.sleep(rate_limit)  # To avoid hitting rate limits
+            with open(log_file_path, write_mode) as log_file:
                 log_file.write(
                     compose_output(
                         job_ad.id, i, job_ad.pred_code, response.text
                     )
                 )
-            except KeyboardInterrupt:
-                print("Process interrupted by user. Exiting...")
-                break
-            except Exception as e:
-                print(f"Error processing row {i}: {str(e)}")
-                current_key, api_keys = switch_api_key(
-                    model, api_keys, exhausted_key=current_key
-                )
-                time.sleep(rate_limit)  # Wait before retrying with new key
+        except KeyboardInterrupt:
+            print("Process interrupted by user. Exiting...")
+            break
+        except Exception as e:
+            print(f"Error processing row {i}: {str(e)}")
+            current_key, api_keys = switch_api_key(
+                model, api_keys, exhausted_key=current_key
+            )
+            time.sleep(rate_limit)  # Wait before retrying with new key
 
-            pbar.update(1)
-        pbar.close()
+        pbar.update(1)
+    pbar.close()
     print("Inference completed.")
 
 

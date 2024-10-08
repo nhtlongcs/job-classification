@@ -155,3 +155,73 @@ def translate_process_data(df_dataset, verbose=False):
         axis=1,
     )
     return df_dataset
+
+
+def fuzzy_matching_df(merged_df, enriched_df_path, en_dataset_path):
+    # FUZZY MATCHING
+    # Read the enriched labels
+    df_enriched = pd.read_csv(enriched_df_path)
+    df_dataset = pd.read_csv(en_dataset_path)
+    columns = ["id", "translated_title"]
+    df_dataset = df_dataset[columns]
+
+    # Extract the desired columns
+    columns = ["code", "description", "english title"]
+    df_code_enriched = df_enriched[columns]
+    df_code_enriched["english title"] = df_code_enriched[
+        "english title"
+    ].str.split(";")
+    df_code_exploded = df_code_enriched.explode("english title")
+    df_code_exploded["english title"] = (
+        df_code_exploded["english title"]
+        .str.lower()
+        .str.replace(":", "")
+        .str.replace(",", "")
+        .str.strip()
+    )
+
+    # Replace abbreviations in job titles for better fuzzy matching
+    merged_df["id"] = merged_df["id"].astype(int)
+    merged_df = merged_df.merge(df_dataset, on="id")
+    merged_df["translated_title"] = merged_df["translated_title"].apply(
+        replace_abbreviations
+    )
+
+    # Run fuzzy matching
+    inspect_df = fuzzy_match(
+        list(merged_df["translated_title"]),
+        list(df_code_exploded["english title"].unique()),
+    )
+    merged_df["matching_title"] = inspect_df["To"]
+    merged_df["score_match"] = inspect_df["Similarity"]
+    merged_df = merged_df.merge(
+        df_code_exploded,
+        left_on="matching_title",
+        right_on="english title",
+        how="left",
+    )
+    merged_df = merged_df.drop_duplicates(subset=["id"], keep="first")
+
+    # Filter the fuzzy matching results
+    df_inspecting = merged_df[merged_df["score_match"] >= 0.9][
+        merged_df["Final Prediction"] != merged_df["code"]
+    ][
+        merged_df["translated_title"].str.len()
+        >= merged_df["matching_title"].str.len()
+    ]
+    # Overwrite the final prediction with the fuzzy matching results
+    merged_df.loc[df_inspecting.index, "Final Prediction"] = df_inspecting[
+        "code"
+    ]
+
+    # Save the merged predictions
+    merged_df["alternatives"] = merged_df["alternatives"].apply(
+        lambda x: ", ".join(x)
+    )
+    merged_df["top-k"] = merged_df["top-k"].apply(lambda x: ", ".join(x))
+
+    return (
+        merged_df[["id", "Final Prediction"]],
+        merged_df[["id", "Confidence"]],
+        merged_df,
+    )
