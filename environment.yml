@@ -52,7 +52,8 @@ dependencies:
     - pip: 
         - rank_bm25
         - polyfuzz
-        - keybert
         - google-generativeai
         - chroma-haystack
-
+        # not used yet
+        - keybert
+        - duckduckgo-search
