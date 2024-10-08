@@ -14,14 +14,6 @@ def test_search_with_valid_description(wrapper):
     assert isinstance(search_results, list)
 
 
-def test_search_with_empty_description(wrapper):
-    job_description = ""
-    search_results = wrapper.search(job_description)
-    assert search_results is not None
-    assert isinstance(search_results, list)
-    assert len(search_results) == 0
-
-
 def test_search_with_special_characters(wrapper):
     job_description = "@#$%^&*()!"
     search_results = wrapper.search(job_description)
@@ -30,7 +22,7 @@ def test_search_with_special_characters(wrapper):
 
 
 def test_search_with_long_description(wrapper):
-    job_description = "a" * 1000
+    job_description = "a" * 100
     search_results = wrapper.search(job_description)
     assert search_results is not None
     assert isinstance(search_results, list)

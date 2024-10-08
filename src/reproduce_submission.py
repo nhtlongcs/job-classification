@@ -1,3 +1,4 @@
+from pathlib import Path
 import warnings
 import pandas as pd
 import rich
@@ -150,13 +151,13 @@ def main():
     df = parse_log_to_dataframe(
         [
             [
-                "artifacts/logs2/gemini_log.txt",
-                "artifacts/logs2/gemini_log_reversed.txt",
-                "artifacts/logs2/gemini_log_missing.txt",
+                "artifacts/archive/logs/gemini_log.txt",
+                "artifacts/archive/logs/gemini_log_reversed.txt",
+                "artifacts/archive/logs/gemini_log_missing.txt",
             ],
             [
-                "artifacts/logs2/gemini-1.5-flash_log.txt",
-                "artifacts/logs2/gemini-1.5-flash_log_reversed.txt",
+                "artifacts/archive/logs/gemini-1.5-flash_log.txt",
+                "artifacts/archive/logs/gemini-1.5-flash_log_reversed.txt",
             ],
         ],
         [
@@ -164,8 +165,11 @@ def main():
             "gemini-1.5-flash-002-higher-level",
         ],
     )
+    result_path = Path("artifacts/archive/results/")
+    result_path.mkdir(exist_ok=True)
+
     cleaned_df = load_and_prepare_cleaned_df(
-        "artifacts/logs2/uncertain_samples_cleaned.xlsx"
+        "artifacts/archive/logs/uncertain_samples_cleaned.xlsx"
     )
 
     # Merge dataframes
@@ -177,7 +181,7 @@ def main():
 
     # Load top-k predictions and labels set
     top_k_preds = load_top_k_predictions(
-        "artifacts/top_k_prediction2/classification_top_10_text-embedding-3-large_new_reranked.csv"
+        "artifacts/archive/top_k_prediction/classification_top_10_text-embedding-3-large_new_reranked.csv"
     )
     labels_set = load_labels_set("datasets/public_data/wi_labels.csv")
 
@@ -190,7 +194,7 @@ def main():
     ]
     print(f"Number of missing predictions: {len(missing_predictions)}")
     missing_ids = missing_predictions["id"].tolist()
-    with open("missing_ids.txt", "w") as f:
+    with open(result_path / "missing_ids.txt", "w") as f:
         f.write("\n".join(missing_ids))
 
     # Merge top-k predictions
@@ -235,19 +239,20 @@ def main():
         (merged_df["Final Prediction"] == merged_df["top-1"])
         & (merged_df["ISCO Code"] != merged_df["top-1"])
     ]["id"].tolist()
-    with open("uncertain_ids.txt", "w") as f:
+    with open(result_path / "uncertain_ids.txt", "w") as f:
         f.write("\n".join(uncertain_ids))
 
     # Perform fuzzy matching
     result_df, confidence_df, merged_df = fuzzy_matching_df(
         merged_df,
         "datasets/enriched_data/wi_labels_enriched.csv",
-        "artifacts/processed/wi_dataset_processed_en.csv",
+        "artifacts/archive/processed/wi_dataset_processed_en.csv",
     )
-
-    merged_df.to_csv("merged_predictions.csv", index=False)
-    confidence_df.to_csv("confidences.csv", index=False)
-    result_df.to_csv("classification.csv", index=False, header=False)
+    merged_df.to_csv(result_path / "merged_predictions.csv", index=False)
+    confidence_df.to_csv(result_path / "confidences.csv", index=False)
+    result_df.to_csv(
+        result_path / "classification.csv", index=False, header=False
+    )
 
 
 if __name__ == "__main__":
