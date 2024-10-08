@@ -1,10 +1,4 @@
-import pandas as pd
-import string
 from IPython.utils import io
-from langdetect import detect
-from polyfuzz import PolyFuzz
-import translators as ts
-from tqdm import tqdm
 
 
 def get_query_results(pipeline, query: str, top_k: int = 5):
