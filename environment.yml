@@ -38,8 +38,10 @@ dependencies:
     - langdetect
     - translators
     - haystack-ai
+    - nltk
     # --- utils ---
     - notebook
+    - openpyxl
     - pandas
     - numpy
     - tqdm
@@ -48,6 +50,7 @@ dependencies:
     # --- test ---
     - pytest
     - pip: 
+        - rank_bm25
         - polyfuzz  
         - google-generativeai
         - chroma-haystack
